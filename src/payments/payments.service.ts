@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
+import { SubscriptionStatusResponse } from './types/subscription';
 
 @Injectable()
 export class PaymentsService {
@@ -35,17 +36,15 @@ export class PaymentsService {
     }
   }
 
-  async getIsUserActive(
-    email: string,
-  ): Promise<Stripe.Subscription.Status | 'not_registered'> {
+  async getIsUserActive(email: string): Promise<SubscriptionStatusResponse> {
     try {
       const user = await this.getUser(email);
       if (!user) {
-        return 'not_registered';
+        return { status: 'not_registered' };
       }
       const subscriptions = await this.getSubscriptions();
       const userSubData = subscriptions.find((sub) => sub.customer === user.id);
-      return userSubData.status;
+      return { status: userSubData.status };
     } catch (error) {
       console.error('Erro ao buscar status da assinatura:', error);
       throw error;
