@@ -35,17 +35,17 @@ export class PaymentsService {
     }
   }
 
-  async getIsUserActive(email: string): Promise<boolean> {
+  async getIsUserActive(
+    email: string,
+  ): Promise<Stripe.Subscription.Status | 'not_registered'> {
     try {
       const user = await this.getUser(email);
       if (!user) {
-        throw new Error('Usuário não encontrado');
+        return 'not_registered';
       }
       const subscriptions = await this.getSubscriptions();
-      const isUserActive = subscriptions.some(
-        (sub) => sub.customer === user.id,
-      );
-      return isUserActive;
+      const userSubData = subscriptions.find((sub) => sub.customer === user.id);
+      return userSubData.status;
     } catch (error) {
       console.error('Erro ao buscar status da assinatura:', error);
       throw error;
